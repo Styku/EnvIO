@@ -67,6 +67,26 @@ class Sensor:
     def get_value(self):
         return self._value
 
+class DeviceList:
+    def __init__(self):
+        self._devices = []
+
+    def add_device(self, name, device):
+        self._devices.append({'name':name, 'value':0.0, 'handle':device})
+
+    def update_all(self):
+        for device in self._devices:
+            device['value'] = device['handle'].update()
+
+    def get_dict(self):
+        d = {}
+        for i in self._devices:
+            d[i['name']] = round(i['value'], 1)
+        return d
+
+    def get_value(self, idx):
+        return self._devices[idx]['value']
+
 
 def list_w1_devices():
     available_sensors = []
