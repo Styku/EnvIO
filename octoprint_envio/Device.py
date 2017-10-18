@@ -1,13 +1,17 @@
 import os
 import glob
+import RPi.GPIO as GPIO
 
 class Sensor:
     (DISCRETE, W1, SPI) = (0, 1, 2)
     def __init__(self, stype=0, gpio=None, path=None):
-        self._type = stype
-        self._gpio = gpio
-        self._path = path
-        self._value = None
+        self.set_type(stype)
+
+        if path is not None:
+            self.set_path(path)
+
+        if gpio is not None:
+            self.set_gpio(gpio)
 
     def set_type(self, type):
         if type in range(3):
@@ -17,7 +21,10 @@ class Sensor:
 
     def set_gpio(self, gpio):
         if gpio in range(2,28):
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(gpio, GPIO.IN)
             self._gpio = gpio
+
         else:
             raise ValueError('Not a valid GPIO number. Available GPIO pins are <2;27>.')
 
@@ -39,6 +46,8 @@ class Sensor:
                     raise ValueError('Could not parse sensor value. Is the sensor type correct?')
             else:
                 raise IOError('File does not exist.')
+        elif self._type == self.DISCRETE:
+            self._value = GPIO.input(self._gpio)
         elif self._type is None:
             raise ValueError('Sensor type has not been set, cannot update.')
         else:
