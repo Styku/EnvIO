@@ -10,10 +10,10 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
         self._sensorTimer = None
         self._refresh_rate = 5.0
         self._sensors = []
+
     def read_sensors(self):
         self._sensors.update_all()
         data = self._sensors.get_dict()
-
         self._plugin_manager.send_plugin_message(self._identifier, data)
         self._logger.info('Refreshing temperature: {}'.format(self._sensors.get_value(0)))
 
@@ -34,9 +34,8 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
 
     def on_after_startup(self):
         self._refresh_rate = float(self._settings.get(["sensor_refresh_rate"]))
-
         self._sensors = Device.DeviceList()
-        self._sensors.add_device('temperature', Device.Sensor(stype=Device.Sensor.W1, path=Device.list_w1_devices()[0]))
+        self._sensors.add_device('temperature', Device.W1Sensor(path=Device.W1Sensor.list_available_sensors()[0]))
         self.start_timer()
 
     def start_timer(self):
