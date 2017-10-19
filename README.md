@@ -1,6 +1,16 @@
 # EnvIO
+EnvIO attempts to be a generic solution for interfacing various peripherals to the Raspberry Pi running OctoPrint. Beside user-friendly management and configuration of external sensors and output devices, soon* EnvIO will provide an interface for managing output devices behaviour through logical and arithmetic equations utilizing input from the sensors and OctoPrint itself.
 
-**TODO:** Describe what your plugin does.
+For example, below equations would turn on a fan if temperature surpasses 40°C degrees and shut down power if either temperature reaches 80°C or smoke is detected:
+> ### Example:
+> relay_fan := temperature_sensor > 40 
+> 
+> relay_power := temperature_sensor < 80 AND NOT smoke_sensor
+
+
+
+---
+*As for now it only supports DS18B20 temperature sensor and any kind of discrete sensors such as MQ2 smoke detector.
 
 ## Setup
 
@@ -9,9 +19,8 @@ or manually using this URL:
 
     https://github.com/Styku/EnvIO/archive/master.zip
 
-**TODO:** Describe how to install your plugin, if more needs to be done than just installing it via pip or through
-the plugin manager.
+**TODO:** Describe how to install plugin.
 
 ## Configuration
 
-**TODO:** Describe your plugin's configuration options (if any).
+**TODO:** Describe configuration.
