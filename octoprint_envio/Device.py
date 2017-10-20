@@ -69,19 +69,18 @@ class DiscreteSensor(Device):
 class DeviceList:
     def __init__(self):
         self._devices = []
+        self._handles = []
 
     def add_device(self, name, device):
-        self._devices.append({'name':name, 'value':0.0, 'handle':device})
+        self._devices.append({'name':name, 'value':0.0})
+        self._handles.append(device)
 
     def update_all(self):
-        for device in self._devices:
-            device['value'] = device['handle'].update()
+        for device, handle in zip(self._devices, self._handles):
+            device['value'] = handle.update()
 
-    def get_dict(self):
-        d = {}
-        for i in self._devices:
-            d[i['name']] = round(i['value'], 1)
-        return d
+    def get_list(self):
+        return self._devices
 
     def get_value(self, idx):
         return self._devices[idx]['value']

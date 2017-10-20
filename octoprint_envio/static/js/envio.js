@@ -3,14 +3,25 @@ $(function() {
         var self = this;
 
         self.global_settings = parameters[1];
-        self.temperature = ko.observable();
+        self.sensor_settings = ko.observableArray();
+        self.devices = ko.observableArray();
 
         self.onBeforeBinding = function(){
-            self.settings = self.global_settings.settings.plugins.envio;
+            self.sensor_settings(self.global_settings.settings.plugins.envio.sensors())
         }
         self.onDataUpdaterPluginMessage = function(plugin, data) {
             if (plugin != "envio") { return; }
-            self.temperature(data.temperature);
+            self.devices(data);
+        };
+
+        self.addDevice = function(){
+            self.sensor_settings.push({'name':'New sensor','GPIO':2,'path':'/sys/bus/w1/devices/'});
+            alert(ko.toJSON(self.sensor_settings));
+            alert(ko.toJSON(self.devices));
+        };
+
+        self.removeDevice = function(){
+            self.sensor_settings.remove(this);
         };
     }
 
