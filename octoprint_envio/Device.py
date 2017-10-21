@@ -4,15 +4,24 @@ import RPi.GPIO as GPIO
 
 class Device:
     (IN,OUT,IO) = [0,1,2]
-    def __init__(self, direction=0, gpio=None):
-        self._direction = direction
+    (DISCRETE,W1,SPI) = [0,1,2]
+    def __init__(self, direction=0, device_type=0, gpio=None):
+        self.set_type(device_type)
+        self.set_direction(direction)
         if gpio is not None:
             self.set_gpio(gpio,direction)
+
+    @staticmethod
+    def factory(dtype, direction=0, gpio=None, path=None):
+        if direction == Device.IN:
+            if dtype == Device.W1: return W1Sensor(gpio, path)
+            if dtype == Device.DISCRETE: return DiscreteSensor(gpio)
 
     def update(self):
         raise NotImplementedError('This method has to be implemented within a subclass!')
 
     def set_gpio(self, gpio, direction):
+        gpio = int(gpio)
         if gpio in range(2,28):
             GPIO.setmode(GPIO.BCM)
             if direction == self.IN:
@@ -23,12 +32,30 @@ class Device:
         else:
             raise ValueError('Not a valid GPIO number. Available GPIO pins are <2;27>.')
 
+    def get_gpio(self):
+        return self._gpio
+
+    def set_direction(self, direction):
+        if direction in range(0,3):
+            self._direction = direction
+        else:
+            raise ValueError('Invalid direction. Supported: Device.IN, Device.OUT, Device.IO.')
+
+    def set_type(self, dtype):
+        if dtype in range(0,3):
+            self._type = dtype
+        else:
+            raise ValueError('Invalid device type. Supported: Device.DISCRETE, Device.W1, Device.SPI.')
+
+    def get_params(self):
+        return {'gpio': self._gpio, 'type': self._type, 'direction': self._direction}
+
     def get_value(self):
         return self._value
 
 class W1Sensor(Device):
     def __init__(self, gpio=4, path=None):
-        Device.__init__(self, Device.IN, gpio)
+        Device.__init__(self, Device.IN, Device.W1, gpio)
         if path is not None:
             self.set_path(path)
 
@@ -59,9 +86,13 @@ class W1Sensor(Device):
         available_sensors = [s + '/w1_slave' for s in sensors]
         return available_sensors
 
+    def get_params(self):
+        return {'gpio': self._gpio, 'type': self._type, 'direction': self._direction, 'path': self._path}
+
 class DiscreteSensor(Device):
-    def __init__(self, gpio=4, path=None):
-        Device.__init__(self, Device.IN, gpio)
+    def __init__(self, gpio=4):
+        print('\nConstructing DiscreteSensor, gpio: {}'.format(gpio))
+        Device.__init__(self, Device.IN, Device.DISCRETE, gpio)
     def update(self):
         self._value = GPIO.input(self._gpio)
         return self._value
@@ -84,6 +115,45 @@ class DeviceList:
 
     def get_value(self, idx):
         return self._devices[idx]['value']
+
+    def update_device_settings(self, name, gpio=None, path=None, dtype=None, direction=None):
+        found = False
+        for device, handle in zip(self._devices, self._handles):
+            if device['name'] == name:
+                handle.set_gpio(gpio, direction) if gpio is not None else 0
+                handle.set_type(dtype) if dtype is not None else 0
+                handle.set_direction(direction) if direction is not None else 0
+                if dtype == Device.W1:
+                    handle.set_path(path)
+                found = True
+                break
+
+        if found == False:
+            print('\nCreating new device. gpio: {}'.format(gpio))
+            self.add_device(name, Device.factory(dtype, direction, gpio, path))
+
+        return found
+
+    def get_settings_list(self):
+        l = []
+        for device, handle in zip(self._devices, self._handles):
+            d = handle.get_params()
+            d['name'] = device['name']
+            l.append(d)
+        return l
+
+    def update_list(self, devices):
+        # Update existing devices or add new ones
+        for new_device in devices:
+            self.update_device_settings(new_device['name'], new_device.get('gpio'), new_device.get('path'), new_device['type'], new_device['direction'])
+
+        # Remove deconfigured devices
+        new_device_names = [new_device['name'] for new_device in devices]
+        for device, handle in zip(self._devices[:], self._handles[:]):
+            if device['name'] not in new_device_names:
+                self._devices.remove(device)
+                self._handles.remove(handle)
+
 
 '''
 #Testing stuff
