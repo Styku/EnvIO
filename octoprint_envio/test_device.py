@@ -35,6 +35,17 @@ class DiscreteSensorTestCase(unittest.TestCase):
         self.dev.set_gpio(5, Device.Device.IN)
         self.assertEqual(self.dev.get_gpio(), 5)
 
+class PWMDeviceTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dev = Device.PWMDevice(27)
+
+    def tearDown(self):
+        self.dev = None
+
+    def test_run(self):
+        self.dev.run(440, 3)
+        self.assertTrue(True)
+
 class DeviceListTestCase(unittest.TestCase):
     def setUp(self):
         self.list = Device.DeviceList()
@@ -70,5 +81,6 @@ class DeviceListTestCase(unittest.TestCase):
 w1_suite = unittest.TestLoader().loadTestsFromTestCase(W1SensorTestCase)
 discrete_suite = unittest.TestLoader().loadTestsFromTestCase(DiscreteSensorTestCase)
 device_list_suite = unittest.TestLoader().loadTestsFromTestCase(DeviceListTestCase)
-alltests = unittest.TestSuite([w1_suite, discrete_suite, device_list_suite])
+pwm_suite = unittest.TestLoader().loadTestsFromTestCase(PWMDeviceTestCase)
+alltests = unittest.TestSuite([w1_suite, discrete_suite, device_list_suite,pwm_suite])
 unittest.TextTestRunner(verbosity=2).run(alltests)

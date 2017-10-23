@@ -1,10 +1,11 @@
 import os
+import time
 import glob
 import RPi.GPIO as GPIO
 
 class Device:
     (IN,OUT,IO) = [0,1,2]
-    (DISCRETE,W1,SPI) = [0,1,2]
+    (DISCRETE,W1,SPI, PWM) = [0,1,2,3]
     def __init__(self, direction=0, device_type=0, gpio=None):
         self.set_type(device_type)
         self.set_direction(direction)
@@ -16,8 +17,13 @@ class Device:
         if direction == Device.IN:
             if dtype == Device.W1: return W1Sensor(gpio, path)
             if dtype == Device.DISCRETE: return DiscreteSensor(gpio)
+        elif direction == Device.OUT:
+            if dtype == Device.PWM: return PWMDevice(gpio)
 
     def update(self):
+        raise NotImplementedError('This method has to be implemented within a subclass!')
+
+    def run(self):
         raise NotImplementedError('This method has to be implemented within a subclass!')
 
     def set_gpio(self, gpio, direction):
@@ -42,7 +48,7 @@ class Device:
             raise ValueError('Invalid direction. Supported: Device.IN, Device.OUT, Device.IO.')
 
     def set_type(self, dtype):
-        if dtype in range(0,3):
+        if dtype in range(0,4):
             self._type = dtype
         else:
             raise ValueError('Invalid device type. Supported: Device.DISCRETE, Device.W1, Device.SPI.')
@@ -91,11 +97,26 @@ class W1Sensor(Device):
 
 class DiscreteSensor(Device):
     def __init__(self, gpio=4):
-        print('\nConstructing DiscreteSensor, gpio: {}'.format(gpio))
         Device.__init__(self, Device.IN, Device.DISCRETE, gpio)
     def update(self):
         self._value = GPIO.input(self._gpio)
         return self._value
+
+class PWMDevice(Device):
+    def __init__(self,gpio=27):
+        Device.__init__(self, Device.OUT, Device.PWM, gpio)
+    def run(self, freq, tm):
+        if(freq==0):
+            time.sleep(tm)
+            return
+        T = 1.0 / freq
+        delay = T / 2
+        nofCycles = int(tm * freq)
+        for i in range(nofCycles):
+            GPIO.output(self._gpio, True)
+            time.sleep(delay)
+            GPIO.output(self._gpio, False)
+            time.sleep(delay)
 
 class DeviceList:
     def __init__(self):
@@ -115,6 +136,9 @@ class DeviceList:
 
     def get_value(self, idx):
         return self._devices[idx]['value']
+
+    def get_handle(self, idx):
+        return self._handles[idx]
 
     def update_device_settings(self, name, gpio=None, path=None, dtype=None, direction=None):
         found = False

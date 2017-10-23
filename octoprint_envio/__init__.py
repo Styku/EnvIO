@@ -10,25 +10,29 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
         self._sensorTimer = None
         self._refresh_rate = 5.0
         self._sensors = None
+        self._devices = None
 
     def read_sensors(self):
         self._sensors.update_all()
+        if self._sensors.get_value(1) == 0: self._devices.get_handle(0).run(440, 2)
         self._plugin_manager.send_plugin_message(self._identifier, self._sensors.get_list())
         self._logger.info('Refreshing sensors')
 
     def get_settings_defaults(self):
         return dict(sensor_refresh_rate=self._refresh_rate,
-                    sensors=[])
+                    sensors=[],
+                    devices=[])
 
     def on_settings_save(self, data):
         self._logger.info('Old data:')
         self._logger.info(self._settings.get(['sensors']))
         self._logger.info('New settings:')
-        self._logger.info(data['sensors'])
+        if 'sensors' in data: data.self._logger.info(data['sensors'])
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
-        self._sensors.update_list(data["sensors"])
-        '''
-        self._refresh_rate = float(self._settings.get(["sensor_refresh_rate"]))
+
+        if 'sensors' in data: self._sensors.update_list(data['sensors'])
+
+        self._refresh_rate = float(self._settings.get(['sensor_refresh_rate']))
         self._logger.info("Setting refresh rate to {}".format(self._refresh_rate))
         if self._sensorTimer is not None:
             try:
@@ -36,12 +40,13 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
             except:
                 pass
         self.start_timer()
-        '''
 
     def on_after_startup(self):
-        self._refresh_rate = float(self._settings.get(["sensor_refresh_rate"]))
+        self._refresh_rate = float(self._settings.get(['sensor_refresh_rate']))
         self._sensors = Device.DeviceList()
-       # self._sensors.add_device('temperature', Device.W1Sensor(path=Device.W1Sensor.list_available_sensors()[0]))
+        self._devices = Device.DeviceList()
+        self._sensors.update_list(self._settings.get(['sensors']))
+        self._devices.update_list(self._settings.get(['devices']))
         self.start_timer()
 
     def start_timer(self):
