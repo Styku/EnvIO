@@ -137,6 +137,12 @@ class DeviceList:
     def get_value(self, idx):
         return self._devices[idx]['value']
 
+    def get_value_by_name(self, name):
+        for d in self._devices:
+            if d['name'] == name:
+                return d['value']
+        return None
+
     def get_handle(self, idx):
         return self._handles[idx]
 
@@ -177,7 +183,6 @@ class DeviceList:
             if device['name'] not in new_device_names:
                 self._devices.remove(device)
                 self._handles.remove(handle)
-
 
 '''
 #Testing stuff

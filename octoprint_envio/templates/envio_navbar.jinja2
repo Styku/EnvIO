@@ -1,1 +1,4 @@
-<p class="nav navbar-text" data-bind="foreach: devices"><span data-bind="html: value"></span>&deg;C</p>
+<p class="nav navbar-text" data-bind="foreach: sensors_output">
+    <span data-bind="html: value, visible: visible"> </span>
+    <span data-bind="html: unit, visible: visible" style="margin-right: 20px; display: inline;"></span>
+</p>

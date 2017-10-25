@@ -3,7 +3,7 @@ import Device
 
 import octoprint.plugin
 from octoprint.util import RepeatedTimer
-
+from collections import defaultdict
 
 class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugin, octoprint.plugin.AssetPlugin, octoprint.plugin.SettingsPlugin):
     def __init__(self):
@@ -14,8 +14,12 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
 
     def read_sensors(self):
         self._sensors.update_all()
-        if self._sensors.get_value(1) == 0: self._devices.get_handle(0).run(440, 2)
-        self._plugin_manager.send_plugin_message(self._identifier, self._sensors.get_list())
+        #if self._sensors.get_value(1) == 0: self._devices.get_handle(0).run(440, 2)
+        data = self._settings.get(['sensors'])[:]
+        for i in data:
+            i['value'] = self._sensors.get_value_by_name(i['name'])
+
+        self._plugin_manager.send_plugin_message(self._identifier, data)
         self._logger.info('Refreshing sensors')
 
     def get_settings_defaults(self):
@@ -24,13 +28,12 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
                     devices=[])
 
     def on_settings_save(self, data):
-        self._logger.info('Old data:')
-        self._logger.info(self._settings.get(['sensors']))
         self._logger.info('New settings:')
-        if 'sensors' in data: data.self._logger.info(data['sensors'])
-        octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
+        self._logger.info(data)
 
+        if 'devices' in data: self._devices.update_list(data['devices'])
         if 'sensors' in data: self._sensors.update_list(data['sensors'])
+        octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
 
         self._refresh_rate = float(self._settings.get(['sensor_refresh_rate']))
         self._logger.info("Setting refresh rate to {}".format(self._refresh_rate))

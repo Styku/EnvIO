@@ -2,6 +2,8 @@ $(function() {
     function EnvioViewModel(parameters) {
         var self = this;
 
+        self.sensors_output = ko.observableArray();
+
         self.global_settings = parameters[1];
         self.sensor_settings = ko.observableArray();
         self.device_settings = ko.observableArray();
@@ -19,11 +21,12 @@ $(function() {
         }
         self.onDataUpdaterPluginMessage = function(plugin, data) {
             if (plugin != "envio") { return; }
-            self.devices(data);
+            self.sensors_output(data);
         };
 
         self.addSensor = function(){
-            self.sensor_settings.push({'name':'New sensor','gpio':2,'path':'/sys/bus/w1/devices/', 'direction':0, 'type':0});
+            self.sensor_settings.push({'name':'New sensor','gpio':2,'path':'/sys/bus/w1/devices/', 'direction':0, 'type':ko.observable(''), 'visible':ko.observable(true), 'unit':''});
+
         };
 
         self.removeSensor = function(){
