@@ -58,7 +58,8 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
 
     def get_assets(self):
         return {
-                "js": ["js/envio.js"]
+                "js": ["js/envio.js"],
+                "css": ["css/envio.css"]
         }
 
 __plugin_implementation__ = EnvioPlugin()

@@ -1,1 +1,12 @@
 /* TODO: Have your plugin's CSS files generated to here. */
+
+#pinout
+{
+
+    background-image: url(../img/pinout.png);
+    background-size: contain;
+    width: 512px;
+    height: 384px;
+    margin: auto;
+    text-align: center;
+}
