@@ -146,6 +146,12 @@ class DeviceList:
     def get_handle(self, idx):
         return self._handles[idx]
 
+    def get_handle_by_name(self, name):
+        for d, h in zip(self._devices, self._handles):
+            if d['name'] == name:
+                return h
+        return None
+
     def update_device_settings(self, name, gpio=None, path=None, dtype=None, direction=None):
         found = False
         for device, handle in zip(self._devices, self._handles):

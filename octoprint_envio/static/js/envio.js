@@ -7,16 +7,19 @@ $(function() {
         self.global_settings = parameters[1];
         self.sensor_settings = ko.observableArray();
         self.device_settings = ko.observableArray();
+        self.trigger_settings = ko.observableArray();
 
         self.sensors = ko.observableArray();
         self.devices = ko.observableArray();
 
         self.sensorTypes = [{'name':'Discrete', 'id':0},{'name':'W1', 'id':1}];
         self.devTypes = [{'name':'Discrete', 'id':0},{'name':'PWM', 'id':3}];
+        self.operatorTypes = [{'name':'==', 'id':0},{'name':'!=', 'id':1},{'name':'<', 'id':2},{'name':'<=', 'id':3},{'name':'>', 'id':4},{'name':'>=', 'id':5}];
 
         self.onBeforeBinding = function(){
             self.sensor_settings(self.global_settings.settings.plugins.envio.sensors())
             self.device_settings(self.global_settings.settings.plugins.envio.devices())
+            self.trigger_settings(self.global_settings.settings.plugins.envio.triggers())
             self.sensor_refresh_rate = self.global_settings.settings.plugins.envio.sensor_refresh_rate
         }
         self.onDataUpdaterPluginMessage = function(plugin, data) {
@@ -39,6 +42,14 @@ $(function() {
 
         self.removeDevice = function(){
             self.device_settings.remove(this);
+        };
+
+        self.addTrigger = function(){
+            self.trigger_settings.push({'device':'', 'sensor':'', 'threshold':0, 'operator':0});
+        }
+
+        self.removeTrigger = function(){
+            self.trigger_settings.remove(this);
         };
     }
 

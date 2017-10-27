@@ -93,5 +93,34 @@
                             
         </div>
     </div>
+    <h3>Triggers <button type="button" class="btn btn-success" data-bind="click: addTrigger">+</button></h3>
+    <div class="control-group" data-bind="foreach: trigger_settings">
+        <div class="row-fluid" style="margin-bottom: 5px">
+            <div class="span1">
+                Trigger
+            </div>
+            <div class="span3">
+                <input type="text" class="span12" data-bind="value: device">
+            </div>
+            <div class="span1">
+                when
+            </div>
+            <div class="span3">
+                <input type="text" class="span12" data-bind="value: sensor">
+            </div>
+            <div class="span1">
+                <select data-bind="options: $root.operatorTypes,
+                                   optionsText: 'name',
+                                   optionsValue: 'id',
+                                   value: operator" class="span12"></select>
+            </div>
+            <div class="span2">
+                <input type="number" class="input-mini text-right" data-bind="value: threshold">
+            </div>
+            <div class="span1">
+                <button type="button" class="btn btn-danger" data-bind="click: $parent.removeTrigger">x</button>
+            </div>
+        </div>
+    </div>
 </form>
 

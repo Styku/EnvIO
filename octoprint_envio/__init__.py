@@ -11,10 +11,17 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
         self._refresh_rate = 5.0
         self._sensors = None
         self._devices = None
+        self._triggers = []
 
     def read_sensors(self):
         self._sensors.update_all()
         #if self._sensors.get_value(1) == 0: self._devices.get_handle(0).run(440, 2)
+
+        for trigger in self._triggers:
+            self._logger.info(trigger)
+            if self.compare(value=self._sensors.get_value_by_name(trigger['sensor']), threshold=int(trigger['threshold']), operator=trigger['operator']):
+                self._devices.get_handle_by_name(trigger['device']).run(440,2)
+
         data = self._settings.get(['sensors'])[:]
         for i in data:
             i['value'] = self._sensors.get_value_by_name(i['name'])
@@ -25,7 +32,8 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
     def get_settings_defaults(self):
         return dict(sensor_refresh_rate=self._refresh_rate,
                     sensors=[],
-                    devices=[])
+                    devices=[],
+                    triggers=[])
 
     def on_settings_save(self, data):
         self._logger.info('New settings:')
@@ -33,6 +41,7 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
 
         if 'devices' in data: self._devices.update_list(data['devices'])
         if 'sensors' in data: self._sensors.update_list(data['sensors'])
+        if 'triggers' in data: self._triggers = data['triggers']
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
 
         self._refresh_rate = float(self._settings.get(['sensor_refresh_rate']))
@@ -50,6 +59,7 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
         self._devices = Device.DeviceList()
         self._sensors.update_list(self._settings.get(['sensors']))
         self._devices.update_list(self._settings.get(['devices']))
+        self._triggers = self._settings.get(['triggers'])
         self.start_timer()
 
     def start_timer(self):
@@ -61,5 +71,16 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
                 "js": ["js/envio.js"],
                 "css": ["css/envio.css"]
         }
+
+    def compare(self, value, threshold, operator):
+        return {
+                0: value==threshold,
+                1: value!=threshold,
+                2: value<threshold,
+                3: value<=threshold,
+                4: value>threshold,
+                5: value>=threshold
+                }[operator]
+
 
 __plugin_implementation__ = EnvioPlugin()
