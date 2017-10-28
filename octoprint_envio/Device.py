@@ -5,7 +5,7 @@ import RPi.GPIO as GPIO
 
 class Device:
     (IN,OUT,IO) = [0,1,2]
-    (DISCRETE,W1,SPI, PWM) = [0,1,2,3]
+    (DISCRETE,DS18B20,SPI, PWM) = [0,1,2,3]
     def __init__(self, direction=0, device_type=0, gpio=None):
         self.set_type(device_type)
         self.set_direction(direction)
@@ -15,8 +15,8 @@ class Device:
     @staticmethod
     def factory(dtype, direction=0, gpio=None, path=None):
         if direction == Device.IN:
-            if dtype == Device.W1: return W1Sensor(gpio, path)
             if dtype == Device.DISCRETE: return DiscreteSensor(gpio)
+            elif dtype == Device.DS18B20: return DS18B20(gpio, path)
         elif direction == Device.OUT:
             if dtype == Device.PWM: return PWMDevice(gpio)
 
@@ -60,8 +60,8 @@ class Device:
         return self._value
 
 class W1Sensor(Device):
-    def __init__(self, gpio=4, path=None):
-        Device.__init__(self, Device.IN, Device.W1, gpio)
+    def __init__(self, dtype, gpio=4, path=None):
+        Device.__init__(self, Device.IN, dtype, gpio)
         if path is not None:
             self.set_path(path)
 
@@ -70,6 +70,21 @@ class W1Sensor(Device):
             self._path = path
         else:
             raise ValueError('File does not exist.')
+
+    @staticmethod
+    def list_available_sensors():
+        available_sensors = []
+        base_path = '/sys/bus/w1/devices/'
+        sensors = glob.glob(base_path + '*-*')
+        available_sensors = [s + '/w1_slave' for s in sensors]
+        return available_sensors
+
+    def get_params(self):
+        return {'gpio': self._gpio, 'type': self._type, 'direction': self._direction, 'path': self._path}
+
+class DS18B20(W1Sensor):
+    def __init__(self, gpio=4, path=None):
+        W1Sensor.__init__(self, Device.DS18B20, gpio, path)
 
     def update(self):
         if os.path.isfile(self._path):
@@ -83,17 +98,6 @@ class W1Sensor(Device):
         else:
             raise IOError('File does not exist.')
         return self._value
-
-    @staticmethod
-    def list_available_sensors():
-        available_sensors = []
-        base_path = '/sys/bus/w1/devices/'
-        sensors = glob.glob(base_path + '*-*')
-        available_sensors = [s + '/w1_slave' for s in sensors]
-        return available_sensors
-
-    def get_params(self):
-        return {'gpio': self._gpio, 'type': self._type, 'direction': self._direction, 'path': self._path}
 
 class DiscreteSensor(Device):
     def __init__(self, gpio=4):
