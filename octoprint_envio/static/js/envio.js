@@ -12,7 +12,7 @@ $(function() {
         self.sensors = ko.observableArray();
         self.devices = ko.observableArray();
 
-        self.sensorTypes = [{'name':'Discrete', 'id':0},{'name':'W1', 'id':1}];
+        self.sensorTypes = [{'name':'Discrete', 'id':0},{'name':'DS18B20', 'id':1}];
         self.devTypes = [{'name':'Discrete', 'id':0},{'name':'PWM', 'id':3}];
         self.operatorTypes = [{'name':'==', 'id':0},{'name':'!=', 'id':1},{'name':'<', 'id':2},{'name':'<=', 'id':3},{'name':'>', 'id':4},{'name':'>=', 'id':5}];
 
