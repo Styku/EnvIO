@@ -4,6 +4,8 @@ $(function() {
 
         self.sensors_output = ko.observableArray();
 
+        self.available_w1 = ko.observableArray();
+
         self.global_settings = parameters[1];
         self.sensor_settings = ko.observableArray();
         self.device_settings = ko.observableArray();
@@ -17,18 +19,20 @@ $(function() {
         self.operatorTypes = [{'name':'==', 'id':0},{'name':'!=', 'id':1},{'name':'<', 'id':2},{'name':'<=', 'id':3},{'name':'>', 'id':4},{'name':'>=', 'id':5}];
 
         self.onBeforeBinding = function(){
-            self.sensor_settings(self.global_settings.settings.plugins.envio.sensors())
-            self.device_settings(self.global_settings.settings.plugins.envio.devices())
-            self.trigger_settings(self.global_settings.settings.plugins.envio.triggers())
-            self.sensor_refresh_rate = self.global_settings.settings.plugins.envio.sensor_refresh_rate
+            self.sensor_settings(self.global_settings.settings.plugins.envio.sensors());
+            self.device_settings(self.global_settings.settings.plugins.envio.devices());
+            self.trigger_settings(self.global_settings.settings.plugins.envio.triggers());
+            self.sensor_refresh_rate = self.global_settings.settings.plugins.envio.sensor_refresh_rate;
         }
         self.onDataUpdaterPluginMessage = function(plugin, data) {
             if (plugin != "envio") { return; }
-            self.sensors_output(data);
+
+            self.available_w1(data.w1);
+            self.sensors_output(data.sensors);
         };
 
         self.addSensor = function(){
-            self.sensor_settings.push({'name':'New sensor','gpio':2,'path':'/sys/bus/w1/devices/', 'direction':0, 'type':ko.observable(''), 'visible':ko.observable(true), 'unit':''});
+            self.sensor_settings.push({'name':'New sensor','gpio':2,'path':'', 'direction':0, 'type':ko.observable(''), 'visible':ko.observable(true), 'unit':''});
 
         };
 

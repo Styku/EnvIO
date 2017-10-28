@@ -21,13 +21,14 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
             self._logger.info(trigger)
             if self.compare(value=self._sensors.get_value_by_name(trigger['sensor']), threshold=int(trigger['threshold']), operator=trigger['operator']):
                 self._devices.get_handle_by_name(trigger['device']).run(440,2)
-
-        data = self._settings.get(['sensors'])[:]
-        for i in data:
+        data = {}
+        data['sensors'] = self._settings.get(['sensors'])[:]
+        data['w1'] = [''] + Device.W1Sensor.list_available_sensors()
+        for i in data['sensors']:
             i['value'] = self._sensors.get_value_by_name(i['name'])
 
         self._plugin_manager.send_plugin_message(self._identifier, data)
-        self._logger.info('Refreshing sensors')
+        self._logger.info(data)
 
     def get_settings_defaults(self):
         return dict(sensor_refresh_rate=self._refresh_rate,

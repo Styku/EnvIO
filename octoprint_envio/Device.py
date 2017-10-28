@@ -163,7 +163,7 @@ class DeviceList:
                 handle.set_gpio(gpio, direction) if gpio is not None else 0
                 handle.set_type(dtype) if dtype is not None else 0
                 handle.set_direction(direction) if direction is not None else 0
-                if dtype == Device.W1:
+                if dtype == Device.DS18B20:
                     handle.set_path(path)
                 found = True
                 break
