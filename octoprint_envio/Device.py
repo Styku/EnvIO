@@ -19,6 +19,7 @@ class Device:
             elif dtype == Device.DS18B20: return DS18B20(gpio, path)
         elif direction == Device.OUT:
             if dtype == Device.PWM: return PWMDevice(gpio)
+            elif dtype == Device.DISCRETE: return DiscreteDevice(gpio)
 
     def update(self):
         raise NotImplementedError('This method has to be implemented within a subclass!')
@@ -106,16 +107,22 @@ class DiscreteSensor(Device):
         self._value = GPIO.input(self._gpio)
         return self._value
 
+class DiscreteDevice(Device):
+    def __init__(self,gpio):
+        Device.__init__(self, Device.OUT, Device.DISCRETE, gpio)
+    def run(self, val=0, tm=0):
+        GPIO.output(self._gpio, val>0)
+
 class PWMDevice(Device):
     def __init__(self,gpio=27):
         Device.__init__(self, Device.OUT, Device.PWM, gpio)
-    def run(self, freq, tm):
-        if(freq==0):
+    def run(self, val=440, tm=2):
+        if(val==0):
             time.sleep(tm)
             return
-        T = 1.0 / freq
+        T = 1.0 / val
         delay = T / 2
-        nofCycles = int(tm * freq)
+        nofCycles = int(tm * val)
         for i in range(nofCycles):
             GPIO.output(self._gpio, True)
             time.sleep(delay)

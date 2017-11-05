@@ -1,5 +1,6 @@
 # coding=utf-8
 import Device
+import Logger
 
 import octoprint.plugin
 from octoprint.util import RepeatedTimer
@@ -12,23 +13,28 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
         self._sensors = None
         self._devices = None
         self._triggers = []
+        self._file_logger = Logger.FileLogger()
 
     def read_sensors(self):
         self._sensors.update_all()
         #if self._sensors.get_value(1) == 0: self._devices.get_handle(0).run(440, 2)
-
+        device_settings = self._settings.get(['devices'])
         for trigger in self._triggers:
             self._logger.info(trigger)
             if self.compare(value=self._sensors.get_value_by_name(trigger['sensor']), threshold=int(trigger['threshold']), operator=trigger['operator']):
-                self._devices.get_handle_by_name(trigger['device']).run(440,2)
+                val = [dev['output'] for dev in device_settings if dev['name'] == trigger['device']][0]
+                self._logger.info('Triggering {}!'.format(trigger['device']))
+                self._devices.get_handle_by_name(trigger['device']).run(val)
+
         data = {}
         data['sensors'] = self._settings.get(['sensors'])[:]
         data['w1'] = [''] + Device.W1Sensor.list_available_sensors()
         for i in data['sensors']:
             i['value'] = self._sensors.get_value_by_name(i['name'])
+            self._file_logger.log(i['name'], i['value'])
 
         self._plugin_manager.send_plugin_message(self._identifier, data)
-        self._logger.info(data)
+        #self._logger.info(data)
 
     def get_settings_defaults(self):
         return dict(sensor_refresh_rate=self._refresh_rate,
