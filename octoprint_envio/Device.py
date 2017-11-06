@@ -112,6 +112,8 @@ class DiscreteDevice(Device):
         Device.__init__(self, Device.OUT, Device.DISCRETE, gpio)
     def run(self, val=0, tm=0):
         GPIO.output(self._gpio, val>0)
+    def stop(self):
+        GPIO.output(self._gpio, 0)
 
 class PWMDevice(Device):
     def __init__(self,gpio=27):
@@ -128,6 +130,8 @@ class PWMDevice(Device):
             time.sleep(delay)
             GPIO.output(self._gpio, False)
             time.sleep(delay)
+    def stop(self):
+        pass
 
 class DeviceList:
     def __init__(self):

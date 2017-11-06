@@ -25,6 +25,8 @@ class EnvioPlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplatePlugi
                 val = [dev['output'] for dev in device_settings if dev['name'] == trigger['device']][0]
                 self._logger.info('Triggering {}!'.format(trigger['device']))
                 self._devices.get_handle_by_name(trigger['device']).run(val)
+            else:
+                self._devices.get_handle_by_name(trigger['device']).stop()
 
         data = {}
         data['sensors'] = self._settings.get(['sensors'])[:]
