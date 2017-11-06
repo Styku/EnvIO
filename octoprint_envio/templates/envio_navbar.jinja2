@@ -1,9 +1,9 @@
 <p class="nav navbar-text" data-bind="foreach: sensors_output">
-    <!-- ko if: type != 0 -->
-        <span data-bind="html: value, visible: visible"> </span>
-        <span data-bind="html: unit, visible: visible" style="margin-right: 20px; display: inline;"></span>
+    <!-- ko if: type != 0 && visible -->
+        <span data-bind="html: value"> </span>
+        <span data-bind="html: unit" style="margin-right: 20px; display: inline;"></span>
     <!-- /ko -->
-    <!-- ko if: type == 0 -->
+    <!-- ko if: type == 0 && visible -->
         <span class="binary-sensor">
             <span class="led" data-bind="css: { ledOk: value == 1, ledError: value != 1 }"></span>
             <span data-bind="html: name"></span>
