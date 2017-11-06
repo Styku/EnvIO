@@ -10,3 +10,23 @@
     margin: auto;
     text-align: center;
 }
+
+.led
+{
+    background-size: contain;
+    width: 12px;
+    height: 12px;
+    margin: auto;
+    display: inline-block;
+}
+
+.ledOk 
+{ 
+    background-image: url(../img/ok.png); 
+}
+
+.ledError 
+{ 
+    background-image: url(../img/error.png); 
+}
+
